@@ -78,10 +78,46 @@ module.exports = ({ strapi }) => ({
         case 'select':
         case 'radio':
           if (value && field.options) {
-            const validOptions = Array.isArray(field.options)
-              ? field.options
-              : Object.values(field.options);
-            if (!validOptions.includes(value)) {
+            let validOptions;
+            
+            // Handle different option structures
+            if (Array.isArray(field.options)) {
+              // Check if options are objects with 'value' property
+              if (field.options.length > 0 && typeof field.options[0] === 'object' && field.options[0] !== null && 'value' in field.options[0]) {
+                // Extract values from objects like [{value: "male", label: "Male"}]
+                validOptions = field.options.map(opt => opt.value);
+                strapi.log.debug(`[Validation] Field ${field.key}: Options are objects, extracted values:`, validOptions);
+              } else {
+                // Options are plain strings/values
+                validOptions = field.options;
+                strapi.log.debug(`[Validation] Field ${field.key}: Options are plain array:`, validOptions);
+              }
+            } else if (typeof field.options === 'object' && field.options !== null) {
+              // Check if options has a 'values' property (e.g., {values: ["Male", "Female"]})
+              if ('values' in field.options && Array.isArray(field.options.values)) {
+                validOptions = field.options.values;
+                strapi.log.debug(`[Validation] Field ${field.key}: Options have 'values' property:`, validOptions);
+              } else {
+                // Options is an object, get values
+                validOptions = Object.values(field.options);
+                strapi.log.debug(`[Validation] Field ${field.key}: Options are object, values:`, validOptions);
+              }
+            } else {
+              validOptions = [];
+            }
+            
+            // Convert value to string for comparison (form-data sends strings)
+            const stringValue = String(value).trim();
+            const stringOptions = validOptions.map(opt => String(opt).trim());
+            
+            strapi.log.debug(`[Validation] Field ${field.key}: Submitted value="${stringValue}", Valid options:`, stringOptions);
+            
+            // Case-insensitive comparison for better user experience
+            const normalizedValue = stringValue.toLowerCase();
+            const normalizedOptions = stringOptions.map(opt => opt.toLowerCase());
+            
+            if (!normalizedOptions.includes(normalizedValue)) {
+              strapi.log.warn(`[Validation] Field ${field.key}: Invalid value "${stringValue}" not in options:`, stringOptions);
               errors.push({
                 field: field.key,
                 message: `${field.label} has an invalid option`,
