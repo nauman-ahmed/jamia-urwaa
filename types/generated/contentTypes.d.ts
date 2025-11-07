@@ -467,6 +467,82 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiFormSubmissionFormSubmission
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'form_submissions';
+  info: {
+    description: 'Submitted form data';
+    displayName: 'Form Submission';
+    pluralName: 'form-submissions';
+    singularName: 'form-submission';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    data: Schema.Attribute.JSON & Schema.Attribute.Required;
+    files: Schema.Attribute.Media<'files', true>;
+    form: Schema.Attribute.Relation<'manyToOne', 'api::form.form'>;
+    ip: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::form-submission.form-submission'
+    > &
+      Schema.Attribute.Private;
+    pdf: Schema.Attribute.Media<'files'>;
+    publishedAt: Schema.Attribute.DateTime;
+    submittedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    userAgent: Schema.Attribute.String;
+  };
+}
+
+export interface ApiFormForm extends Struct.CollectionTypeSchema {
+  collectionName: 'forms';
+  info: {
+    description: 'Form definitions for dynamic form building';
+    displayName: 'Form';
+    pluralName: 'forms';
+    singularName: 'form';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    fields: Schema.Attribute.Component<'form.field', true>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::form.form'> &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    notificationEmails: Schema.Attribute.JSON;
+    publishedAt: Schema.Attribute.DateTime;
+    rateLimitPerIP: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<10>;
+    sendPdf: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    slug: Schema.Attribute.UID<'name'> & Schema.Attribute.Required;
+    storePdf: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    submissions: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::form-submission.form-submission'
+    >;
+    successMessage: Schema.Attribute.String &
+      Schema.Attribute.DefaultTo<'Thank you for your submission!'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginContentReleasesRelease
   extends Struct.CollectionTypeSchema {
   collectionName: 'strapi_releases';
@@ -978,6 +1054,8 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::form-submission.form-submission': ApiFormSubmissionFormSubmission;
+      'api::form.form': ApiFormForm;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

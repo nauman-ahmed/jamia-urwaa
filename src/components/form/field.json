@@ -1,0 +1,60 @@
+{
+  "collectionName": "components_form_fields",
+  "info": {
+    "displayName": "Form Field",
+    "description": "A field definition for a form"
+  },
+  "options": {},
+  "attributes": {
+    "key": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "text",
+        "textarea",
+        "email",
+        "number",
+        "select",
+        "radio",
+        "checkbox",
+        "date",
+        "file"
+      ],
+      "required": true,
+      "default": "text"
+    },
+    "options": {
+      "type": "json"
+    },
+    "required": {
+      "type": "boolean",
+      "default": false
+    },
+    "validation": {
+      "type": "json"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "helpText": {
+      "type": "string"
+    },
+    "visibility": {
+      "type": "enumeration",
+      "enum": [
+        "public",
+        "admin-only"
+      ],
+      "default": "public"
+    }
+  }
+}
+
