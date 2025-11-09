@@ -10,7 +10,11 @@
   "options": {
     "draftAndPublish": false
   },
-  "pluginOptions": {},
+  "pluginOptions": {
+    "i18n": {
+      "localized": true
+    }
+  },
   "attributes": {
     "form": {
       "type": "relation",
@@ -20,41 +24,59 @@
     },
     "formName": {
       "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
       "required": true
     },
     "data": {
       "type": "json",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
       "required": true
     },
     "submittedAt": {
       "type": "datetime",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
       "required": true
     },
     "files": {
       "type": "media",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
       "multiple": true,
       "required": false,
-      "allowedTypes": ["files"]
-    },
-    "pdf": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": ["files"],
-      "private": true,
-      "plugin": "upload",
-      "visible": false
-
+      "allowedTypes": [
+        "files"
+      ]
     },
     "ip": {
-      "type": "string"
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     },
     "userAgent": {
-      "type": "string"
-    },
-    "locale": {
-      "type": "string"
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      }
     }
   }
 }
-
