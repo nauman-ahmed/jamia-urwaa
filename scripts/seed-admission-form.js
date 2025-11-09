@@ -69,16 +69,16 @@ function getFormFields() {
   return [
     // ==================== SECTION 1: Student Information ====================
     {
-      key: 'fullNameEnglish',
-      label: 'Full Name (English)',
+      key: 'firstName',
+      label: 'First Name',
       type: 'text',
       required: true,
       placeholder: 'Enter your full name in English',
       visibility: 'public',
     },
     {
-      key: 'fullNameUrdu',
-      label: 'Full Name (Urdu)',
+      key: 'lastName',
+      label: 'Last Name',
       type: 'text',
       required: true,
       placeholder: 'Enter your full name in Urdu',
@@ -381,7 +381,7 @@ function getFormFields() {
       visibility: 'public',
     },
     {
-      key: 'declarationAgreement',
+      key: 'declaration',
       label: 'Declaration Agreement',
       type: 'checkbox',
       required: true,
