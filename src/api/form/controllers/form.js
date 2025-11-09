@@ -188,6 +188,7 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
       const submissionService = strapi.service('api::form-submission.submission');
       const submission = await submissionService.createSubmission({
         form,
+        formName: form.name,
         data: submissionData,
         files: submissionFiles,
         ip: clientIP,

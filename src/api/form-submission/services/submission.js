@@ -41,7 +41,7 @@ module.exports = ({ strapi }) => ({
 
     // Generate PDF if needed
     let pdfFile = null;
-    if (form.storePdf || form.sendPdf) {
+    if (form.sendPdf) {
       try {
         const pdfResult = await pdfService.generatePdf(form, data, uploadedFiles);
         
@@ -93,6 +93,7 @@ module.exports = ({ strapi }) => ({
     const submission = await strapi.entityService.create('api::form-submission.form-submission', {
       data: {
         form: form.id,
+        formName: form.name,
         data,
         submittedAt: new Date(),
         files: uploadedFiles.map(f => f.id),

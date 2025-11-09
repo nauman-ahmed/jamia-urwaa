@@ -18,6 +18,10 @@
       "target": "api::form.form",
       "inversedBy": "submissions"
     },
+    "formName": {
+      "type": "string",
+      "required": true
+    },
     "data": {
       "type": "json",
       "required": true
@@ -36,7 +40,11 @@
       "type": "media",
       "multiple": false,
       "required": false,
-      "allowedTypes": ["files"]
+      "allowedTypes": ["files"],
+      "private": true,
+      "plugin": "upload",
+      "visible": false
+
     },
     "ip": {
       "type": "string"

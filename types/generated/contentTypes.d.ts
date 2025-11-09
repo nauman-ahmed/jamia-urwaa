@@ -486,6 +486,7 @@ export interface ApiFormSubmissionFormSubmission
     data: Schema.Attribute.JSON & Schema.Attribute.Required;
     files: Schema.Attribute.Media<'files', true>;
     form: Schema.Attribute.Relation<'manyToOne', 'api::form.form'>;
+    formName: Schema.Attribute.String & Schema.Attribute.Required;
     ip: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
@@ -493,7 +494,7 @@ export interface ApiFormSubmissionFormSubmission
       'api::form-submission.form-submission'
     > &
       Schema.Attribute.Private;
-    pdf: Schema.Attribute.Media<'files'>;
+    pdf: Schema.Attribute.Media<'files'> & Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     submittedAt: Schema.Attribute.DateTime & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
