@@ -9,19 +9,44 @@ const { createCoreController } = require('@strapi/strapi').factories;
 module.exports = createCoreController('api::form.form', ({ strapi }) => ({
   /**
    * Get form schema by slug (public endpoint)
-   * GET /api/forms/:slug
+   * GET /api/forms/:slug?locale=en
+   * Supports locale parameter for i18n
+   * Examples:
+   *   - GET /api/forms/admission-form (default locale)
+   *   - GET /api/forms/admission-form?locale=en
+   *   - GET /api/forms/admission-form?locale=ur
    */
   async findBySlug(ctx) {
     const { slug } = ctx.params;
+    const { locale } = ctx.query;
 
     try {
-      const form = await strapi.db.query('api::form.form').findOne({
+      // First, find the form by slug (slug is not localized, so we can find it in any locale)
+      const baseForm = await strapi.db.query('api::form.form').findOne({
         where: { slug, active: true },
         populate: ['fields'],
       });
 
-      if (!form) {
+      if (!baseForm) {
         return ctx.notFound('Form not found');
+      }
+
+      // If locale is specified, fetch the localized version
+      let form = baseForm;
+      if (locale && locale !== baseForm.locale) {
+        // Use entityService to get the localized version
+        const localizedForm = await strapi.entityService.findMany('api::form.form', {
+          filters: { slug, active: true },
+          locale: locale,
+          populate: ['fields'],
+        });
+
+        if (localizedForm && localizedForm.length > 0) {
+          form = localizedForm[0];
+        } else {
+          // If localized version doesn't exist, fall back to base form
+          strapi.log.warn(`Locale ${locale} not found for form ${slug}, using default locale`);
+        }
       }
 
       // Return only schema data (no PII)
@@ -30,6 +55,7 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
         name: form.name,
         slug: form.slug,
         description: form.description,
+        locale: form.locale || locale || 'en',
         fields: form.fields.map(field => ({
           key: field.key,
           label: field.label,
@@ -56,10 +82,13 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
    */
   async submit(ctx) {
     const { slug } = ctx.params;
+    const { locale } = ctx.query;
+    const submissionLocale = locale || ctx.request.headers['accept-language']?.split(',')[0]?.split('-')[0] || 'en';
     
     // Log request details for debugging
     strapi.log.info('Form submission request:', {
       slug,
+      locale: submissionLocale,
       method: ctx.request.method,
       contentType: ctx.request.headers['content-type'],
       hasBody: !!ctx.request.body,
@@ -78,11 +107,27 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
     }
 
     try {
-      // Get form
-      const form = await strapi.db.query('api::form.form').findOne({
+      // Get form in the specified locale
+      let form = await strapi.db.query('api::form.form').findOne({
         where: { slug, active: true },
         populate: ['fields'],
       });
+
+      // If locale is specified, try to get the localized version
+      if (submissionLocale && form) {
+        const localizedForm = await strapi.entityService.findMany('api::form.form', {
+          filters: { slug, active: true },
+          locale: submissionLocale,
+          populate: ['fields'],
+        });
+
+        if (localizedForm && localizedForm.length > 0) {
+          form = localizedForm[0];
+          strapi.log.info(`Using form in locale: ${submissionLocale}`);
+        } else {
+          strapi.log.warn(`Form not found in locale ${submissionLocale}, using default locale`);
+        }
+      }
 
       if (!form) {
         strapi.log.warn(`Form not found: ${slug}`);
@@ -193,7 +238,7 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
         files: submissionFiles,
         ip: clientIP,
         userAgent: ctx.request.headers['user-agent'],
-        locale: ctx.request.headers['accept-language']?.split(',')[0] || 'en',
+        locale: submissionLocale,
       });
 
       // Send email notifications

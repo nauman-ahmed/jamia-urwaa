@@ -89,7 +89,7 @@ module.exports = ({ strapi }) => ({
       }
     }
 
-    // Create submission record
+    // Create submission record in the specified locale
     const submission = await strapi.entityService.create('api::form-submission.form-submission', {
       data: {
         form: form.id,
@@ -100,8 +100,8 @@ module.exports = ({ strapi }) => ({
         pdf: pdfFile ? pdfFile.id : null,
         ip,
         userAgent,
-        locale,
       },
+      locale: locale || 'en',
       populate: ['form', 'files', 'pdf'],
     });
 
