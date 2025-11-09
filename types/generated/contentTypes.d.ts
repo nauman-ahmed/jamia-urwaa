@@ -520,6 +520,12 @@ export interface ApiFormSubmissionFormSubmission
       'oneToMany',
       'api::form-submission.form-submission'
     >;
+    pdf: Schema.Attribute.Media<'files'> &
+      Schema.Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     publishedAt: Schema.Attribute.DateTime;
     submittedAt: Schema.Attribute.DateTime &
       Schema.Attribute.Required &
