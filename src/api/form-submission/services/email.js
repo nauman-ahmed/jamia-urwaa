@@ -29,6 +29,14 @@ module.exports = ({ strapi }) => ({
       // Format submission data for email
       const submissionDataHtml = this.formatSubmissionData(form, submission);
 
+      // Build admin URL with locale query parameter
+      const locale = submission.locale || 'en';
+      const documentId = submission.documentId || submission.id;
+      const queryParams = new URLSearchParams({
+        'plugins[i18n][locale]': locale
+      });
+      const adminUrl = `${process.env.ADMIN_URL || 'http://localhost:1337'}/admin/content-manager/collection-types/api::form-submission.form-submission/${documentId}?${queryParams.toString()}`;
+
       // Email content
       const emailSubject = `New Form Submission: ${form.name}`;
       const emailHtml = `
@@ -56,13 +64,12 @@ module.exports = ({ strapi }) => ({
             <div class="content">
               <p><strong>Form:</strong> ${form.name}</p>
               <p><strong>Submitted At:</strong> ${new Date(submission.submittedAt).toLocaleString()}</p>
-              <p><strong>IP Address:</strong> ${submission.ip || 'N/A'}</p>
               <hr>
               <h3>Submission Data:</h3>
               ${submissionDataHtml}
               <hr>
               <p>
-                <a href="${process.env.ADMIN_URL || 'http://localhost:1337'}/admin/content-manager/collection-types/api::form-submission.form-submission/${submission.id}" class="button">
+                <a href="${adminUrl}" class="button">
                   View in Admin Panel
                 </a>
               </p>
