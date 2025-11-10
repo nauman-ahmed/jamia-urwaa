@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Jamia Urwaa Frontend
+
+Next.js frontend application for Jamia Urwaa admission forms.
+
+## Features
+
+- Material UI components for a modern, clean interface
+- Dynamic form rendering based on Strapi form schema
+- Multi-step form with section navigation
+- File upload support
+- Form validation
+- Responsive design
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js >= 20.9.0 (required for Next.js 16)
+- npm or yarn
+- Strapi backend running (default: http://localhost:1337)
+
+### Installation
+
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Create a `.env.local` file in the frontend directory:
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:1337/api
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## Learn More
+### Accessing the Admission Form
 
-To learn more about Next.js, take a look at the following resources:
+Navigate to `/admission` to view and submit the admission form:
+- http://localhost:3000/admission
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+frontend/
+├── src/
+│   ├── app/              # Next.js app router pages
+│   │   ├── admission/    # Admission form page
+│   │   └── layout.tsx     # Root layout with theme
+│   ├── components/       # React components
+│   │   ├── AdmissionForm.tsx    # Main admission form component
+│   │   ├── FormField.tsx         # Dynamic form field component
+│   │   └── ThemeProvider.tsx    # Material UI theme provider
+│   ├── lib/              # Utility functions
+│   │   └── api.ts        # API client for Strapi
+│   └── theme.ts          # Material UI theme configuration
+└── package.json
+```
 
-## Deploy on Vercel
+## Form Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The admission form includes all fields from the Strapi backend:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Sections:
+1. **Student Information** - Personal details, contact info, photo
+2. **Family Information** - Family details, income, guardian info
+3. **Educational Background** - Previous education, certificates
+4. **Program Selection** - Program choice, class, hostel requirement
+5. **Documents** - Required document uploads
+6. **Additional Information** - Motivation, scholarship, declaration
+
+### Field Types Supported:
+- Text inputs
+- Email inputs
+- Number inputs
+- Date pickers
+- Textareas
+- Select dropdowns
+- Radio buttons
+- Checkboxes
+- File uploads
+
+## API Integration
+
+The frontend communicates with the Strapi backend through:
+
+- `GET /api/forms/{slug}` - Fetch form schema
+- `POST /api/forms/{slug}/submit` - Submit form data
+
+## Environment Variables
+
+- `NEXT_PUBLIC_API_URL` - Strapi API base URL (default: http://localhost:1337/api)
+
+## Building for Production
+
+```bash
+npm run build
+npm start
+```
+
+## Notes
+
+- The form dynamically loads fields from the Strapi backend
+- All validation rules are enforced both client-side and server-side
+- File uploads are handled via FormData
+- The form uses a multi-step stepper for better UX
