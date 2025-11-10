@@ -13,7 +13,8 @@
     "strapi": "strapi",
     "upgrade": "npx @strapi/upgrade latest",
     "upgrade:dry": "npx @strapi/upgrade latest --dry",
-    "seed:admission": "node scripts/run-seed.js"
+    "seed:admission": "node scripts/run-seed.js",
+    "seed:event": "node scripts/run-seed-event.js"
   },
   "dependencies": {
     "@strapi/plugin-cloud": "5.30.1",
