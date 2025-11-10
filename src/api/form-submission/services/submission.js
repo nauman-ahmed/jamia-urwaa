@@ -4,108 +4,112 @@
  * submission service
  */
 
+const fsP = require('fs/promises'); // promises API
+// const fsSync = require('fs');     // only needed if you actually use streams
+
 module.exports = ({ strapi }) => ({
   /**
    * Create a form submission
    */
   async createSubmission({ form, data, files, ip, userAgent, locale }) {
     const pdfService = strapi.service('api::form-submission.pdf');
+    const uploadService = strapi.service('plugin::upload.upload');
 
-    // Upload files if any
+    // 1) Upload incoming files (if any)
     let uploadedFiles = [];
     if (files && Object.keys(files).length > 0) {
       const filesToUpload = [];
-      
-      // Handle different file input formats
-      for (const [key, fileInput] of Object.entries(files)) {
-        if (Array.isArray(fileInput)) {
-          filesToUpload.push(...fileInput);
-        } else if (fileInput) {
-          filesToUpload.push(fileInput);
-        }
+      for (const [, fileInput] of Object.entries(files)) {
+        if (Array.isArray(fileInput)) filesToUpload.push(...fileInput);
+        else if (fileInput) filesToUpload.push(fileInput);
       }
 
       if (filesToUpload.length > 0) {
         try {
-          const uploaded = await strapi.plugins.upload.services.upload.upload({
+          // v5 accessor + let the provider handle incoming multipart files
+          const uploaded = await uploadService.upload({
             data: {},
             files: filesToUpload,
           });
           uploadedFiles = Array.isArray(uploaded) ? uploaded : [uploaded];
         } catch (error) {
           strapi.log.error('File upload error:', error);
-          // Continue without files if upload fails
+          // continue without files
         }
       }
     }
 
-    // Generate PDF if needed
+    // 2) Generate + upload PDF (optional)
     let pdfFile = null;
+    let pdfBuffer = null;
+    let pdfFileName = null;
+
     if (form.sendPdf) {
       try {
+        strapi.log.info('PDF step 1: generating');
         const pdfResult = await pdfService.generatePdf(form, data, uploadedFiles);
-        
-        // Upload PDF file using Strapi's upload service
-        const fs = require('fs');
-        const pdfFileName = `submission-${Date.now()}.pdf`;
-        
-        // Read file as stream for upload
-        const pdfStream = fs.createReadStream(pdfResult.path);
-        const stats = await fs.promises.stat(pdfResult.path);
-        
-        // Create file object compatible with Strapi upload
-        const pdfFileObj = {
+
+        // Read generated pdf as Buffer
+        pdfBuffer = await fsP.readFile(pdfResult.path);
+        pdfFileName = `submission-${Date.now()}.pdf`;
+
+        const fileForUpload = {
+          // IMPORTANT: do NOT include "path" here
           name: pdfFileName,
-          path: pdfResult.path,
           type: 'application/pdf',
-          size: stats.size,
-          stream: pdfStream,
+          size: pdfBuffer.length,
+          buffer: pdfBuffer,
         };
-        
-        const pdfUploaded = await strapi.plugins.upload.services.upload.upload({
-          data: {
-            fileInfo: {
-              name: pdfFileName,
-              caption: `Form submission PDF for ${form.name}`,
-              alternativeText: `Form submission PDF for ${form.name}`,
-            },
-          },
-          files: [pdfFileObj],
-        });
-        
-        pdfFile = Array.isArray(pdfUploaded) ? pdfUploaded[0] : pdfUploaded;
-        
-        // Clean up temp file after a short delay to ensure upload completes
+
+        strapi.log.info('PDF step 2: uploading');
+        // const uploaded = await uploadService.upload({
+        //   data: {
+        //     fileInfo: {
+        //       name: pdfFileName,
+        //       caption: `Form submission PDF for ${form.name}`,
+        //       alternativeText: `Form submission PDF for ${form.name}`,
+        //     },
+        //   },
+        //   files: fileForUpload, // single object or [fileForUpload]
+        // });
+
+        // pdfFile = Array.isArray(uploaded) ? uploaded[0] : uploaded;
+
+        // Clean temp file
         setTimeout(async () => {
           try {
-            await fs.promises.unlink(pdfResult.path);
+            await fsP.unlink(pdfResult.path);
           } catch (cleanupError) {
             strapi.log.warn('Could not clean up temp PDF file:', cleanupError);
           }
         }, 1000);
       } catch (error) {
-        strapi.log.error('PDF generation error:', error);
-        // Continue without PDF if generation fails
+        strapi.log.error('PDF generation/upload error:', error);
+        // continue without PDF
       }
     }
 
-    // Create submission record in the specified locale
-    const submission = await strapi.entityService.create('api::form-submission.form-submission', {
-      data: {
-        form: form.id,
-        formName: form.name,
-        data,
-        submittedAt: new Date(),
-        files: uploadedFiles.map(f => f.id),
-        pdf: pdfFile ? pdfFile.id : null,
-        ip,
-        userAgent,
-      },
-      locale: locale || 'en',
-      populate: ['form', 'files', 'pdf'],
-    });
-
+    // 3) Create submission record (v5 Document Service, locale-aware)
+    const submission = await strapi
+      .documents('api::form-submission.form-submission')
+      .create({
+        locale: locale || 'en',
+        status: 'published', // or 'draft' if you want to moderate
+        data: {
+          form: form.id,
+          formName: form.name,
+          data,
+          submittedAt: new Date(),
+          files: uploadedFiles.map((f) => f.id),
+          pdf: pdfFile ? pdfFile.id : null,
+          ip,
+          userAgent,
+        },
+        populate: ['form', 'files', 'pdf'],
+      });
+    
+    submission.pdf = pdfBuffer;
+    submission.pdfFileName = pdfFileName
     return submission;
   },
 });
-

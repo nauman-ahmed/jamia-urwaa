@@ -39,7 +39,7 @@ module.exports = ({ strapi }) => ({
         },
       });
 
-      // Save to temporary file
+      // Save to temporary file 
       const tempDir = path.join(process.cwd(), '.tmp');
       await fs.mkdir(tempDir, { recursive: true });
       const tempPath = path.join(tempDir, `submission-${Date.now()}.pdf`);

@@ -10,7 +10,7 @@ module.exports = ({ strapi }) => ({
   /**
    * Send notification email to admins
    */
-  async sendNotificationEmail({ form, submission, emails, includePdf }) {
+  async sendNotificationEmail({ form, submission, emails, includePdf, submissionFiles }) {
     try {
       // Get SMTP configuration from environment
       const smtpConfig = {
@@ -75,17 +75,39 @@ module.exports = ({ strapi }) => ({
         </html>
       `;
 
-      // Prepare attachments
       const attachments = [];
       if (includePdf && submission.pdf) {
-        const pdfFile = await strapi.entityService.findOne(
-          'plugin::upload.file',
-          submission.pdf.id || submission.pdf
-        );
-        if (pdfFile) {
+        attachments.push({
+          filename: submission.pdfFileName,
+          content: submission.pdf,            // Buffer
+          contentType: 'application/pdf',
+        });
+      }
+      
+      /* (B) NEW: include uploaded files from submissionFiles */
+      const fs = require('fs');
+      const path = require('path');
+      
+      const rawFiles = Object.values(submissionFiles || {})
+        .flatMap(v => Array.isArray(v) ? v : [v])
+        .filter(Boolean);
+      
+      for (const f of rawFiles) {
+        const filePath = f.filepath || f.path || f.tmpPath;
+        const filename = f.originalFilename || f.name || (filePath ? path.basename(filePath) : 'upload');
+        const mime = f.mimetype || f.type || 'application/octet-stream';
+      
+        if (filePath && fs.existsSync(filePath)) {
           attachments.push({
-            filename: pdfFile.name,
-            path: pdfFile.url.startsWith('http') ? pdfFile.url : `${process.env.SERVER_URL || 'http://localhost:1337'}${pdfFile.url}`,
+            filename,
+            content: fs.createReadStream(filePath),
+            contentType: mime,
+          });
+        } else if (f.buffer) {
+          attachments.push({
+            filename,
+            content: f.buffer,
+            contentType: mime,
           });
         }
       }

@@ -167,23 +167,6 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
         }
       }
 
-      strapi.log.info('SubmissionData:', submissionData);
-      strapi.log.info('SubmissionFiles:', Object.keys(submissionFiles));
-      
-      // Log form fields structure for debugging
-      strapi.log.info('Form fields structure:', JSON.stringify(
-        form.fields.map(f => ({
-          key: f.key,
-          label: f.label,
-          type: f.type,
-          options: f.options,
-          optionsType: Array.isArray(f.options) 
-            ? (f.options.length > 0 && typeof f.options[0] === 'object' ? 'array-of-objects' : 'array-of-values')
-            : typeof f.options === 'object' ? 'object' : typeof f.options
-        })),
-        null,
-        2
-      ));
       
       // Validate submission
       const validationService = strapi.service('api::form-submission.validation');
@@ -249,6 +232,7 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
           submission,
           emails: form.notificationEmails,
           includePdf: form.sendPdf,
+          submissionFiles: submissionFiles
         });
       }
 
