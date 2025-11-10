@@ -779,6 +779,93 @@ export interface PluginContentReleasesReleaseAction
   };
 }
 
+export interface PluginElasticsearchIndexingLog
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'indexing-log';
+  info: {
+    description: 'Logged runs of the indexing cron job';
+    displayName: 'Indexing Logs';
+    pluralName: 'indexing-logs';
+    singularName: 'indexing-log';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    details: Schema.Attribute.Text;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::elasticsearch.indexing-log'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<['pass', 'fail']> &
+      Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface PluginElasticsearchTask extends Struct.CollectionTypeSchema {
+  collectionName: 'task';
+  info: {
+    description: 'Search indexing tasks';
+    displayName: 'Task';
+    pluralName: 'tasks';
+    singularName: 'task';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    collection_name: Schema.Attribute.String & Schema.Attribute.Required;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    full_site_indexing: Schema.Attribute.Boolean;
+    indexing_status: Schema.Attribute.Enumeration<['to-be-done', 'done']> &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'to-be-done'>;
+    indexing_type: Schema.Attribute.Enumeration<
+      ['add-to-index', 'remove-from-index']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'add-to-index'>;
+    item_document_id: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::elasticsearch.task'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface PluginI18NLocale extends Struct.CollectionTypeSchema {
   collectionName: 'i18n_locale';
   info: {
@@ -1202,6 +1289,8 @@ declare module '@strapi/strapi' {
       'api::form.form': ApiFormForm;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
+      'plugin::elasticsearch.indexing-log': PluginElasticsearchIndexingLog;
+      'plugin::elasticsearch.task': PluginElasticsearchTask;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::review-workflows.workflow': PluginReviewWorkflowsWorkflow;
       'plugin::review-workflows.workflow-stage': PluginReviewWorkflowsWorkflowStage;
