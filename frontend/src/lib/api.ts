@@ -98,6 +98,7 @@ export async function submitForm(
 
   const responseData = await response.json();
 
+  console.log(responseData);
   if (!response.ok) {
     const error: FormSubmissionError = responseData.error || {
       status: response.status,

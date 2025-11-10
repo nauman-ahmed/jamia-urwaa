@@ -101,6 +101,16 @@ module.exports = createCoreController('api::form.form', ({ strapi }) => ({
     let submissionData = ctx.request.body?.data || ctx.request.body || {};
     const submissionFiles = ctx.request.files || {};
 
+    // Parse JSON string if data is a string (from FormData)
+    if (typeof submissionData === 'string') {
+      try {
+        submissionData = JSON.parse(submissionData);
+      } catch (parseError) {
+        strapi.log.warn('Failed to parse submission data as JSON:', parseError);
+        submissionData = {};
+      }
+    }
+
     // Ensure submissionData is an object
     if (!submissionData || typeof submissionData !== 'object' || Array.isArray(submissionData)) {
       submissionData = {};

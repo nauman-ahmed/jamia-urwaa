@@ -13,7 +13,13 @@ module.exports = ({ strapi }) => ({
 
     for (const field of fields) {
       const value = data[field.key];
-      const fieldFiles = files?.[field.key] || [];
+      // Normalize files to always be an array (handle both single file objects and arrays)
+      let fieldFiles = files?.[field.key];
+      if (fieldFiles && !Array.isArray(fieldFiles)) {
+        fieldFiles = [fieldFiles];
+      } else if (!fieldFiles) {
+        fieldFiles = [];
+      }
 
       // Check required fields
       if (field.required) {
