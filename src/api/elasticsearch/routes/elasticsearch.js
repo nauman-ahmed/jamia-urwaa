@@ -11,7 +11,7 @@ module.exports = {
       path: '/elasticsearch/search',
       handler: 'elasticsearch.search',
       config: {
-        auth: true, // Public endpoint
+        auth: false, // Public endpoint
       },
     },
   ],

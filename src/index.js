@@ -48,7 +48,7 @@ module.exports = {
     // Choose fields (fast) and a serializer (shapes output, strips PII).
     const COLLECTIONS = {
       'api::event.event': {
-        fields: ['id', 'title', 'slug', 'locale'],
+        fields: ['id', 'title', 'slug', 'locale', 'documentId'],
         populate: {}, // add relations if you need them, e.g. { cover: true, categories: true }
         serialize: (doc) => ({
           contentType: 'api::event.event',
@@ -56,11 +56,12 @@ module.exports = {
           title: doc.title ?? null,
           slug: doc.slug ?? null,
           locale: doc.locale ?? 'en',
+          documentId: doc.documentId ?? null,
         }),
       },
 
       'api::form.form': {
-        fields: ['id', 'name', 'slug', 'description', 'locale'],
+        fields: ['id', 'name', 'slug', 'description', 'locale', 'documentId'],
         populate: {},
         serialize: (doc) => ({
           contentType: 'api::form.form',
@@ -69,12 +70,13 @@ module.exports = {
           slug: doc.slug ?? null,
           description: doc.description ?? null,
           locale: doc.locale ?? 'en',
+          documentId: doc.documentId ?? null,
         }),
       },
 
       'api::form-submission.form-submission': {
         // keep locale + meta, drop PII from "data"
-        fields: ['id', 'formName', 'data', 'locale'],
+        fields: ['id', 'formName', 'data', 'locale', 'documentId'],
         populate: {},
         serialize: (doc) => {
           const { data = {}, ...rest } = doc;
@@ -86,6 +88,7 @@ module.exports = {
             formName: doc.formName ?? null,
             data: safeData,
             locale: doc.locale ?? 'en',
+            documentId: doc.documentId ?? null,
           };
         },
       },
