@@ -77,6 +77,12 @@ This project includes a comprehensive dynamic forms system that allows you to cr
 - [How to Add Forms to Your Website/Frontend](#-how-to-add-forms-to-your-websitefrontend)
   - [Using the Existing Form Components](#option-1-using-the-existing-form-components-recommended)
   - [Simple React Hook Example](#option-2-simple-react-hook-example)
+- [Localization (i18n) Guide](#-localization-i18n-guide)
+  - [Setting Up i18n in Strapi](#setting-up-i18n-in-strapi)
+  - [Creating Localized Forms](#creating-localized-forms)
+  - [Translating Form Content](#translating-form-content)
+  - [Using Locales in Frontend](#using-locales-in-frontend)
+  - [Best Practices](#best-practices)
 - [Reusing Features in a New Website](#-reusing-features-in-a-new-website---complete-guide)
   - [Option 1: Use as a Headless CMS](#option-1-use-as-a-headless-cms-recommended-for-multiple-websites)
   - [Option 2: Copy the Form System to Another Strapi Project](#option-2-copy-the-form-system-to-another-strapi-project)
@@ -1153,6 +1159,475 @@ function SimpleForm({ formSlug, locale = 'en' }) {
   );
 }
 ```
+
+---
+
+## 🌍 Localization (i18n) Guide
+
+This section provides a complete guide to setting up and using multi-language support (i18n) for your dynamic forms. With i18n enabled, you can create forms in multiple languages (e.g., English, Urdu, Arabic) and serve the appropriate version based on the user's locale.
+
+### Setting Up i18n in Strapi
+
+Before you can use localization with forms, you need to enable and configure the i18n plugin in Strapi.
+
+#### Step 1: Install i18n Plugin (if not already installed)
+
+The i18n plugin is usually included with Strapi by default. To verify or install:
+
+```bash
+npm install @strapi/plugin-i18n
+# or
+yarn add @strapi/plugin-i18n
+```
+
+#### Step 2: Configure i18n in Strapi
+
+1. **Enable i18n in Content Types**:
+   - Go to **Content-Type Builder** in Strapi admin
+   - Click on **Form** content type
+   - In the settings, enable **"Enable localization for this Content-Type"**
+   - Click **Save**
+
+2. **Configure Available Locales**:
+   - Go to **Settings** → **Internationalization** in Strapi admin
+   - Click **"Add new locale"** to add languages
+   - Common locales:
+     - `en` - English
+     - `ur` - Urdu
+     - `ar` - Arabic
+     - `fr` - French
+     - etc.
+   - Set a default locale (usually `en`)
+
+3. **Verify Configuration**:
+   - After enabling i18n, you should see a locale selector in the top-right of the admin panel
+   - The Form content type should now show locale options when creating/editing forms
+
+#### Step 3: Enable i18n for Form Fields Component
+
+If you're using a component for form fields (like `field.json`), you may need to enable i18n for that component as well:
+
+1. Go to **Content-Type Builder** → **Components**
+2. Find your form field component
+3. Enable **"Enable localization for this Component"**
+4. Save
+
+### Creating Localized Forms
+
+Once i18n is enabled, you can create different language versions of the same form.
+
+#### Method 1: Create Separate Forms for Each Language
+
+**Step-by-Step:**
+
+1. **Create English Form**:
+   - Go to **Content Manager** → **Forms**
+   - Click **"Create new entry"**
+   - Select locale: **English (en)** (from dropdown in top-right)
+   - Fill in form details:
+     - Name: `Contact Form`
+     - Slug: `contact-form`
+     - Description: `Get in touch with us`
+   - Add fields with English labels
+   - Publish
+
+2. **Create Urdu Form**:
+   - Click **"Create new entry"** again
+   - Select locale: **Urdu (ur)** (from dropdown)
+   - Fill in form details:
+     - Name: `رابطہ فارم` (Contact Form in Urdu)
+     - Slug: `contact-form` (same slug!)
+     - Description: `ہم سے رابطہ کریں` (Get in touch with us)
+   - Add fields with Urdu labels
+   - Publish
+
+**Important**: Use the **same slug** for all language versions. The API will return the correct version based on the `locale` query parameter.
+
+#### Method 2: Use Strapi's Localization Feature (Recommended)
+
+If you enabled localization for the Form content type:
+
+1. **Create Base Form**:
+   - Create a form in the default locale (e.g., English)
+   - Fill in all details and fields
+
+2. **Add Translations**:
+   - In the form editor, look for a **"Locales"** or **"Add locale"** button
+   - Click to add a new locale (e.g., Urdu)
+   - Strapi will create a copy linked to the original
+   - Translate all fields:
+     - Form name
+     - Description
+     - Field labels
+     - Placeholders
+     - Help text
+     - Success message
+     - Options (for select/radio fields)
+
+3. **Publish All Locales**:
+   - Make sure to publish each locale version
+   - Unpublished locales won't be accessible via API
+
+### Translating Form Content
+
+When creating localized forms, you need to translate all user-facing text. Here's what needs translation:
+
+#### 1. Form-Level Content
+
+- **Name**: The form's display name
+  - English: `Contact Form`
+  - Urdu: `رابطہ فارم`
+  
+- **Description**: Form description
+  - English: `Get in touch with us`
+  - Urdu: `ہم سے رابطہ کریں`
+  
+- **Success Message**: Message shown after submission
+  - English: `Thank you for your submission!`
+  - Urdu: `آپ کی جمع کرائی کا شکریہ!`
+
+#### 2. Field-Level Content
+
+For each field, translate:
+
+- **Label**: Field label shown to users
+  - English: `Your Name`
+  - Urdu: `آپ کا نام`
+  
+- **Placeholder**: Placeholder text
+  - English: `Enter your name`
+  - Urdu: `اپنا نام درج کریں`
+  
+- **Help Text**: Additional instructions
+  - English: `Enter your legal first name`
+  - Urdu: `اپنا قانونی پہلا نام درج کریں`
+  
+- **Validation Messages**: Error messages
+  - English: `This field is required`
+  - Urdu: `یہ فیلڈ ضروری ہے`
+  
+- **Options** (for select/radio fields): Available choices
+  - English: `["Male", "Female", "Other"]`
+  - Urdu: `["مرد", "عورت", "دیگر"]`
+
+#### Example: Complete Field Translation
+
+**English Version:**
+```json
+{
+  "key": "firstName",
+  "label": "First Name",
+  "type": "text",
+  "required": true,
+  "placeholder": "Enter your first name",
+  "helpText": "Enter your legal first name as it appears on your ID"
+}
+```
+
+**Urdu Version:**
+```json
+{
+  "key": "firstName",
+  "label": "پہلا نام",
+  "type": "text",
+  "required": true,
+  "placeholder": "اپنا پہلا نام درج کریں",
+  "helpText": "اپنا قانونی پہلا نام درج کریں جیسا کہ آپ کی شناختی کارڈ پر ہے"
+}
+```
+
+**Important**: Keep the `key` the same across all locales. Only translate user-facing text (labels, placeholders, help text, options).
+
+### Using Locales in Frontend
+
+Once you have localized forms, you can fetch and display the correct version based on the user's language preference.
+
+#### 1. Fetch Form with Locale
+
+**Using API directly:**
+```javascript
+// Fetch English version
+const response = await fetch('http://localhost:1337/api/forms/contact-form?locale=en');
+const formSchema = await response.json();
+
+// Fetch Urdu version
+const urduResponse = await fetch('http://localhost:1337/api/forms/contact-form?locale=ur');
+const urduFormSchema = await urduResponse.json();
+```
+
+**Using the provided API utility:**
+```typescript
+import { fetchFormSchema } from '@/lib/api';
+
+// Fetch with locale
+const formSchema = await fetchFormSchema('contact-form', 'en'); // English
+const urduFormSchema = await fetchFormSchema('contact-form', 'ur'); // Urdu
+```
+
+#### 2. Detect User Locale
+
+You can detect the user's preferred language in several ways:
+
+**From URL parameter:**
+```typescript
+// In Next.js
+import { useSearchParams } from 'next/navigation';
+
+function ContactPage() {
+  const searchParams = useSearchParams();
+  const locale = searchParams.get('locale') || 'en';
+  // Use locale when fetching form
+}
+```
+
+**From browser language:**
+```typescript
+function getBrowserLocale(): string {
+  if (typeof window === 'undefined') return 'en';
+  
+  const browserLang = navigator.language || navigator.languages[0];
+  // Map browser language to your supported locales
+  if (browserLang.startsWith('ur')) return 'ur';
+  if (browserLang.startsWith('ar')) return 'ar';
+  return 'en'; // Default
+}
+```
+
+**From stored preference:**
+```typescript
+// Store user's language preference in localStorage
+const savedLocale = localStorage.getItem('preferredLocale') || 'en';
+```
+
+#### 3. Submit Form with Locale
+
+When submitting forms, include the locale parameter:
+
+```typescript
+import { submitForm } from '@/lib/api';
+
+// Submit with locale
+await submitForm('contact-form', formData, files, 'ur'); // Urdu locale
+```
+
+The locale ensures:
+- Validation messages are in the correct language
+- Email notifications use the correct language
+- Submission records include locale information
+
+#### 4. Complete Example: Multi-Language Form Component
+
+```tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { fetchFormSchema, submitForm } from '@/lib/api';
+import FormFieldComponent from './FormField';
+
+export default function LocalizedContactForm() {
+  const searchParams = useSearchParams();
+  
+  // Get locale from URL, browser, or default to 'en'
+  const [locale, setLocale] = useState(() => {
+    const urlLocale = searchParams.get('locale');
+    if (urlLocale) return urlLocale;
+    
+    // Fallback to browser language
+    if (typeof window !== 'undefined') {
+      const browserLang = navigator.language;
+      if (browserLang.startsWith('ur')) return 'ur';
+      if (browserLang.startsWith('ar')) return 'ar';
+    }
+    
+    return 'en';
+  });
+  
+  const [formSchema, setFormSchema] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadForm();
+  }, [locale]);
+
+  const loadForm = async () => {
+    try {
+      setLoading(true);
+      const schema = await fetchFormSchema('contact-form', locale);
+      setFormSchema(schema);
+      // Initialize form data...
+    } catch (error) {
+      console.error('Failed to load form:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await submitForm('contact-form', formData, {}, locale);
+      // Show success message...
+    } catch (error) {
+      // Handle error...
+    }
+  };
+
+  // Language switcher
+  const switchLanguage = (newLocale: string) => {
+    setLocale(newLocale);
+    // Optionally update URL
+    window.history.pushState({}, '', `?locale=${newLocale}`);
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (!formSchema) return <div>Form not found</div>;
+
+  return (
+    <div>
+      {/* Language Switcher */}
+      <div style={{ marginBottom: '20px' }}>
+        <button onClick={() => switchLanguage('en')}>English</button>
+        <button onClick={() => switchLanguage('ur')}>اردو</button>
+        <button onClick={() => switchLanguage('ar')}>العربية</button>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit}>
+        <h1>{formSchema.name}</h1>
+        {formSchema.description && <p>{formSchema.description}</p>}
+        
+        {formSchema.fields
+          .filter(f => f.visibility === 'public')
+          .map(field => (
+            <FormFieldComponent
+              key={field.key}
+              field={field}
+              value={formData[field.key]}
+              onChange={(value) => setFormData({...formData, [field.key]: value})}
+            />
+          ))}
+        
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+  );
+}
+```
+
+### Best Practices
+
+#### 1. Consistent Slug Usage
+
+- ✅ **DO**: Use the same slug for all language versions
+  - English: `contact-form` (slug)
+  - Urdu: `contact-form` (same slug)
+  - Arabic: `contact-form` (same slug)
+
+- ❌ **DON'T**: Use different slugs per language
+  - English: `contact-form`
+  - Urdu: `رابطہ-فارم` (different slug - wrong!)
+
+#### 2. Consistent Field Keys
+
+- ✅ **DO**: Keep field keys identical across all locales
+  - All locales: `firstName`, `email`, `phoneNumber`
+
+- ❌ **DON'T**: Use different keys per language
+  - English: `firstName`
+  - Urdu: `پہلا_نام` (different key - wrong!)
+
+#### 3. Complete Translations
+
+- Translate **all** user-facing text:
+  - Form names and descriptions
+  - All field labels
+  - Placeholders
+  - Help text
+  - Success messages
+  - Options for select/radio fields
+  - Validation error messages (if custom)
+
+#### 4. RTL (Right-to-Left) Support
+
+For languages like Urdu and Arabic:
+
+```css
+/* Add RTL support in your CSS */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .form-field {
+  text-align: right;
+}
+
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}
+```
+
+```tsx
+// Set dir attribute based on locale
+<div dir={locale === 'ur' || locale === 'ar' ? 'rtl' : 'ltr'}>
+  {/* Form content */}
+</div>
+```
+
+#### 5. Fallback Locale
+
+Always provide a fallback to the default locale:
+
+```typescript
+const locale = userLocale || 'en'; // Fallback to English
+```
+
+#### 6. Testing
+
+Test each locale version:
+- ✅ Verify all text is translated
+- ✅ Check form submission works
+- ✅ Verify email notifications use correct language
+- ✅ Test RTL layout (if applicable)
+- ✅ Test validation messages
+
+#### 7. Locale Storage
+
+Consider storing user's language preference:
+
+```typescript
+// Save preference
+localStorage.setItem('preferredLocale', 'ur');
+
+// Load preference
+const savedLocale = localStorage.getItem('preferredLocale') || 'en';
+```
+
+### Troubleshooting i18n Issues
+
+**Issue: Form not found for locale**
+- ✅ Check that the form is published in that locale
+- ✅ Verify the locale code matches exactly (case-sensitive: `en` not `EN`)
+- ✅ Ensure i18n is enabled for the Form content type
+
+**Issue: Fields showing in wrong language**
+- ✅ Verify you're passing the correct locale parameter
+- ✅ Check that all fields are translated in the admin panel
+- ✅ Clear browser cache and reload
+
+**Issue: Locale selector not appearing**
+- ✅ Verify i18n plugin is installed and enabled
+- ✅ Check that localization is enabled for Form content type
+- ✅ Restart Strapi server after enabling i18n
+
+**Issue: Validation messages in wrong language**
+- ✅ Check that validation messages are translated
+- ✅ Verify locale is passed to submit function
+- ✅ Check backend locale configuration
 
 ---
 
